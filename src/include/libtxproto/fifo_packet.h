@@ -42,6 +42,7 @@ AVBufferRef *RENAME(fifo_ref)(AVBufferRef *src, int max_queued, FNAME block_flag
 int RENAME(fifo_is_full)(AVBufferRef *src);
 int RENAME(fifo_get_size)(AVBufferRef *src);
 int RENAME(fifo_get_max_size)(AVBufferRef *src);
+int RENAME(fifo_nb_dests)(AVBufferRef *src);
 
 /* Modify */
 void RENAME(fifo_set_max_queued)(AVBufferRef *dst, int max_queued);

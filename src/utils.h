@@ -43,6 +43,7 @@ static inline void sp_event_send_eos_packets(void *ctx, SPBufferList *events, AV
     sp_eventlist_dispatch(ctx, events, SP_EVENT_ON_EOS, &tmp);
     if (tmp != 0) {
         for (int i = 0; i < nb_fifo; i++)
-            sp_packet_fifo_push(fifo[i], NULL);
+            if (sp_packet_fifo_nb_dests(fifo[i]))
+                sp_packet_fifo_push(fifo[i], NULL);
     }
 }

@@ -41,8 +41,10 @@ static void *demuxing_thread(void *arg)
 
         err = av_read_frame(ctx->avf, out_packet);
         if (err == AVERROR_EOF) {
-            for (int i = 0; i < ctx->avf->nb_streams; i++)
-                sp_packet_fifo_push(ctx->dst_packets[i], NULL);
+            for (int i = 0; i < ctx->avf->nb_streams; i++) {
+                if (sp_packet_fifo_nb_dests(ctx->dst_packets[i]))
+                    sp_packet_fifo_push(ctx->dst_packets[i], NULL);
+            }
 
             sp_log(ctx, SP_LOG_VERBOSE, "Stream EOF, FIFOs flushed!\n");
             err = 0;
@@ -54,8 +56,12 @@ static void *demuxing_thread(void *arg)
             goto fail;
         }
 
-        sp_log(ctx, SP_LOG_TRACE, "Sending packet from stream %i\n", out_packet->stream_index);
-        sp_packet_fifo_push(ctx->dst_packets[out_packet->stream_index], out_packet);
+        if (sp_packet_fifo_nb_dests(ctx->dst_packets[out_packet->stream_index])) {
+            sp_log(ctx, SP_LOG_TRACE, "Sending packet from stream %i\n", out_packet->stream_index);
+            sp_packet_fifo_push(ctx->dst_packets[out_packet->stream_index], out_packet);
+        } else {
+            sp_log(ctx, SP_LOG_TRACE, "Skipping packet from stream %i\n", out_packet->stream_index);
+        }
 
         av_packet_free(&out_packet);
     }

@@ -264,6 +264,12 @@ unlock:
     return err;
 }
 
+int RENAME(fifo_nb_dests)(AVBufferRef *src)
+{
+    SNAME *src_ctx = (SNAME *)src->data;
+    return sp_bufferlist_len(src_ctx->dests);
+}
+
 int RENAME(fifo_pop_flags)(AVBufferRef *src, TYPE **dst, FNAME flags)
 {
     int ret = 0;
