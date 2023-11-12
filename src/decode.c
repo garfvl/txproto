@@ -118,9 +118,8 @@ has_stream_id:
            sp_class_get_name(dec),
            dec->avctx->time_base.num, dec->avctx->time_base.den);
 
-    dec->src_packets = av_buffer_ref(mux->dst_packets[idx]);
-
-    return 0;
+    dec->src_packets = sp_packet_fifo_create(dec, 10, PACKET_FIFO_BLOCK_MAX_OUTPUT | PACKET_FIFO_BLOCK_NO_INPUT);
+    return sp_packet_fifo_mirror(dec->src_packets, mux->dst_packets[idx]);
 }
 
 static int context_full_config(DecodingContext *ctx)
