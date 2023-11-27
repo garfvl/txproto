@@ -1,0 +1,31 @@
+
+# Disable quit confirmation
+set confirm off
+# SIGINT signal is txproto quit system
+handle SIGINT noprint nostop pass
+
+# Use SIGTSTP/-19 signal for timeout backtrace:
+# here we catch the signal and just print the BT for every thread
+catch signal SIGTSTP
+commands
+  thread apply all bt
+  continue
+end
+
+set $_exitcode = -1
+# Launch the debugged program to get a proper PID
+starti
+# Launch a python command:
+# - get the subprogram PID
+# - launch a timer (10s) and try to send a SIGTSTP/-19 signal after that
+# - the test should not take longer than 10sec, so if we have such a signal catched (see above), then the program is hanging
+python import subprocess; pid = gdb.selected_inferior().pid; subprocess.Popen(['sleep 10 && ps -p %i > /dev/null && kill -19 %i' % (pid, pid)], shell=True)
+# Continue == run the program
+continue
+if $_exitcode != -1 
+    # Exit code != -1 -> quit normally
+    quit
+end
+# Exit code == -1 -> Show all the BT and exit
+thread apply all bt
+exit 42
